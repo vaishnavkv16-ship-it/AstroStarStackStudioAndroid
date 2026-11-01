@@ -1,0 +1,29 @@
+name: Build Android APK
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Generate the Android project
+        run: python make_android_project.py
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+      - name: Build APK
+        run: gradle assembleDebug --no-daemon --stacktrace
+        working-directory: android
+      - name: Collect APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk AstroStarStackStudio.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AstroStarStackStudio-android
+          path: AstroStarStackStudio.apk
